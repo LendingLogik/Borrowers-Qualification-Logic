@@ -1,42 +1,62 @@
 name: Python Docker CI with Docker Compose
+
+# Trigger the workflow on push to main and pull request to main
 on:
   push:
     branches:
-      - main  # Ensure you are pushing to the correct branch
+      - main  # This will run on pushes to the main branch
   pull_request:
     branches:
-      - main  # Ensure you are targeting the correct branch for PRs
+      - main  # This will run on pull requests targeting the main branch
+
 jobs:
-  job1:
+  build:
     runs-on: ubuntu-latest
+
+    # Set up Docker service
+    services:
+      docker:
+        image: docker:19.03.12
+        options: --privileged
+
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
+
     - name: Set up Docker Compose
       run: |
         curl -sSL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
         chmod +x /usr/local/bin/docker-compose
+
     - name: Cache Docker layers
       uses: actions/cache@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-docker-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-docker-
+
     - name: Build and start services with Docker Compose
       run: |
         docker-compose -f docker-compose.yml up -d --build
+
     - name: Install Python dependencies in web service
       run: |
         docker-compose exec web pip install --upgrade pip
         docker-compose exec web pip install -r requirements.txt
+
+    - name: Run tests inside Docker container
+      run: |
+        docker-compose exec web pytest
+
     - name: Shut down Docker Compose services
       run: |
         docker-compose down
- # Login to Docker Hub
+
+    # Login to Docker Hub
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
