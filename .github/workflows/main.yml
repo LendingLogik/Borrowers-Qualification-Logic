@@ -1,7 +1,11 @@
-name: cicd-workflow to create docker image and upload into Dockerhub
+name: Python Docker CI with Docker Compose
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - main  # Ensure you are pushing to the correct branch
+  pull_request:
+    branches:
+      - main  # Ensure you are targeting the correct branch for PRs
 jobs:
   job1:
     runs-on: ubuntu-latest
