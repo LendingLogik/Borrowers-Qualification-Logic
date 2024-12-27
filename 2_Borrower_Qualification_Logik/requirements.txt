@@ -1,5 +1,0 @@
-Flask
-Pandas
-Numpy
-lxml
-gunicorn==20.1.0
