@@ -1,0 +1,51 @@
+name: cicd-workflow to create docker image and upload into Dockerhub
+on:
+  push:
+    branches: [ "master" ]
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Set up Docker Compose
+      run: |
+        curl -sSL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-docker-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-docker-
+    - name: Build and start services with Docker Compose
+      run: |
+        docker-compose -f docker-compose.yml up -d --build
+    - name: Install Python dependencies in web service
+      run: |
+        docker-compose exec web pip install --upgrade pip
+        docker-compose exec web pip install -r requirements.txt
+    - name: Shut down Docker Compose services
+      run: |
+        docker-compose down
+ # Login to Docker Hub
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    # Build and push Docker image to Docker Hub
+    - name: Build and push Docker image
+      env:
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Build the Docker image and tag it with the commit SHA
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification:${{ github.sha }} .
+        
+        # Push the Docker image to Docker Hub
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification:${{ github.sha }}
