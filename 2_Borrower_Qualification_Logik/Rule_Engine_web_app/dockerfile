@@ -1,0 +1,23 @@
+# pull official base image
+FROM python:3.8-slim-buster
+
+
+# set a directory for the app
+WORKDIR /usr/src/app
+
+# COPY . .
+# COPY requirements.txt requirements.txt
+
+# install dependencies
+RUN pip install --upgrade pip
+COPY ./requirements.txt /usr/src/app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+EXPOSE 5000
+
+# copy project
+COPY . /usr/src/app/
+
+# RUN pip3 install -r requirment.txt
+# COPY Rules.Json /path/to/destination/Rules.Json
+
+# CMD [ "python3","-m","flask","run","--host=0.0.0.0" ]
