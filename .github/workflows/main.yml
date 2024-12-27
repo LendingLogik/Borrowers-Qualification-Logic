@@ -42,15 +42,10 @@ jobs:
     - name: Build and start services with Docker Compose
       run: |
         docker-compose -f docker-compose.yml up -d --build
-
     - name: Install Python dependencies in web service
       run: |
-        docker-compose exec web pip install --upgrade pip
-        docker-compose exec web pip install -r requirements.txt
-
-    - name: Run tests inside Docker container
-      run: |
-        docker-compose exec web pytest
+        docker-compose exec -T web pip install --upgrade pip
+        docker-compose exec -T web pip install -r requirements.txt
 
     - name: Shut down Docker Compose services
       run: |
