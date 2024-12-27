@@ -64,7 +64,7 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # Build the Docker image and tag it with the commit SHA
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification:${{ github.sha }} .
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification:${{ github.sha }} -f Rule_Engine_web_app/dockerfile .
         
         # Push the Docker image to Docker Hub
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification:${{ github.sha }}
