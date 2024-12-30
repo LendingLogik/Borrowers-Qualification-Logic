@@ -59,13 +59,19 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     # Build and push Docker image to Docker Hub
+
     - name: Build and push Docker image for web
       env:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-web:${{ github.sha }} -f Rule_Engine_web_app/Dockerfile.prod .
 
+    - name: Debug build context
+      run: |
+        ls -l ./nginx
+        
     - name: Build and push Docker image for nginx
+
       env:
         IMAGE_TAG: ${{ github.sha }}
       run: |
