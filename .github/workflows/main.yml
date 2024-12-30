@@ -47,9 +47,9 @@ jobs:
         docker-compose exec -T web pip install --upgrade pip
         docker-compose exec -T web pip install -r requirements.txt
 
-    - name: Shut down Docker Compose services
-      run: |
-        docker-compose -f docker-compose.prod.yml down -v
+    # - name: Shut down Docker Compose services
+    #   run: |
+    #     docker-compose -f docker-compose.prod.yml down -v
 
     # Login to Docker Hub
     - name: Login to Docker Hub
