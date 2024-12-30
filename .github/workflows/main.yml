@@ -41,7 +41,7 @@ jobs:
 
     - name: Build and start services with Docker Compose
       run: |
-        docker-compose -f docker-compose.yml up -d --build
+        docker-compose -f docker-compose.prod.yml up -d --build
     - name: Install Python dependencies in web service
       run: |
         docker-compose exec -T web pip install --upgrade pip
@@ -49,7 +49,7 @@ jobs:
 
     - name: Shut down Docker Compose services
       run: |
-        docker-compose down
+        docker-compose -f docker-compose.prod.yml down -v
 
     # Login to Docker Hub
     - name: Login to Docker Hub
@@ -59,12 +59,20 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     # Build and push Docker image to Docker Hub
-    - name: Build and push Docker image
+    - name: Build and push Docker image for web
       env:
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        # Build the Docker image and tag it with the commit SHA
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification:${{ github.sha }} -f Rule_Engine_web_app/dockerfile .
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-web:${{ github.sha }} -f Rule_Engine_web_app/Dockerfile.prod .
+
+    - name: Build and push Docker image for nginx
+      env:
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }} -f ./nginx/Dockerfile .
         
-        # Push the Docker image to Docker Hub
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification:${{ github.sha }}
+   
+    - name: Push Docker images
+      run: |
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-web:${{ github.sha }}
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }}
