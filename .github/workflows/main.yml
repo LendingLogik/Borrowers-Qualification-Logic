@@ -75,7 +75,7 @@ jobs:
       env:
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build --no-cache -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }} -f ./nginx 
+        docker build --no-cache -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }} -f ./nginx .
         
    
     - name: Push Docker images
