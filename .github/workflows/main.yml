@@ -69,7 +69,7 @@ jobs:
       env:
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }} -f nginx/Dockerfile .
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }} -f ./nginx/Dockerfile ./path/to/context
         
    
     - name: Push Docker images
