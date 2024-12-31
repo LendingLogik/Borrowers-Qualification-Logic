@@ -23,21 +23,21 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+    # - name: Set up Docker Buildx
+    #   uses: docker/setup-buildx-action@v2
 
-    - name: Set up Docker Compose
-      run: |
-        curl -sSL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
+    # - name: Set up Docker Compose
+    #   run: |
+    #     curl -sSL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+    #     chmod +x /usr/local/bin/docker-compose
 
-    - name: Cache Docker layers
-      uses: actions/cache@v2
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-docker-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-docker-
+    # - name: Cache Docker layers
+    #   uses: actions/cache@v2
+    #   with:
+    #     path: /tmp/.buildx-cache
+    #     key: ${{ runner.os }}-docker-${{ github.sha }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-docker-
 
     - name: Build and start services with Docker Compose
       run: |
