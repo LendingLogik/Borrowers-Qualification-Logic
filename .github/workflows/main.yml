@@ -40,7 +40,7 @@ jobs:
     #       ${{ runner.os }}-docker-
     - name: Shut down any existing Docker Compose services (first)
       run: |
-        docker-compose down -v
+        docker-compose down -v --remove-orphans
         
     - name: Build and start services with Docker Compose
       run: |
