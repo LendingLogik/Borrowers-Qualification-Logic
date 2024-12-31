@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     # Set up Docker service
     services:
@@ -47,9 +47,9 @@ jobs:
         docker-compose exec -T web pip install --upgrade pip
         docker-compose exec -T web pip install -r requirements.txt
 
-    - name: Shut down Docker Compose services
-      run: |
-        docker-compose -f docker-compose.prod.yml down -v
+    # - name: Shut down Docker Compose services
+    #   run: |
+    #     docker-compose -f docker-compose.prod.yml down -v
 
     # Login to Docker Hub
     - name: Login to Docker Hub
@@ -83,18 +83,5 @@ jobs:
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-web:${{ github.sha }}
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }}
         
-     # Run the container on Docker Desktop
-    - name: Run Docker container locally
-      run: |
-        # Pull the latest image from Docker Hub if not already pulled
-        docker pull ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-web:${{ github.sha }}
-        docker pull ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }}
-
-        # Run the web container
-        docker run -d --name web-container -p 5000:5000 ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-web:${{ github.sha }}
-
-        # Run the nginx container
-        docker run -d --name nginx-container -p 80:80 ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }}
-
-        # Confirm the containers are running
+     
         docker ps
