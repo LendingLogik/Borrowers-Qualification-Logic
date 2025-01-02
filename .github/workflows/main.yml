@@ -61,9 +61,9 @@ jobs:
         fi
 
     # Install Python dependencies after container is up
-    - name: Install Python dependencies in web service
-      run: |
-        docker-compose exec -T web pip install --upgrade pip
-        docker-compose exec -T web pip install -r requirements.txt
+    # - name: Install Python dependencies in web service
+    #   run: |
+    #     docker-compose exec -T web pip install --upgrade pip
+    #     docker-compose exec -T web pip install -r requirements.txt
 
 
