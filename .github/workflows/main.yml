@@ -66,7 +66,4 @@ jobs:
         docker-compose exec -T web pip install --upgrade pip
         docker-compose exec -T web pip install -r requirements.txt
 
-    # Shut down Docker Compose services after successful installation
-    - name: Shut down Docker Compose services
-      run: |
-        docker-compose down -v --remove-orphans
+
