@@ -23,68 +23,50 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    # - name: Set up Docker Buildx
-    #   uses: docker/setup-buildx-action@v2
-
+    # Ensure Docker Compose is installed (optional if already preinstalled)
     # - name: Set up Docker Compose
     #   run: |
     #     curl -sSL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
     #     chmod +x /usr/local/bin/docker-compose
 
-    # - name: Cache Docker layers
-    #   uses: actions/cache@v2
-    #   with:
-    #     path: /tmp/.buildx-cache
-    #     key: ${{ runner.os }}-docker-${{ github.sha }}
-    #     restore-keys: |
-    #       ${{ runner.os }}-docker-
-    - name: Shut down any existing Docker Compose services (first)
+    - name: Build Docker image
       run: |
-        docker-compose down -v --remove-orphans
-        
-    - name: Build and start services with Docker Compose
+        # Attempt to build the image first
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-web:${{ github.sha }} -f Rule_Engine_web_app/Dockerfile.prod .
+        if [ $? -ne 0 ]; then
+          echo "Docker build failed! Aborting the process."
+          exit 1
+        fi
+        echo "Docker build successful"
+
+    # Stop any existing running containers first but do not delete images
+    - name: Stop running containers (without deleting images)
+      run: |
+        docker-compose stop || echo "No running containers to stop"
+
+    # Now, clean up and remove old containers, images, and networks
+    - name: Remove old containers and networks
+      run: |
+        docker-compose down -v --remove-orphans || echo "No containers to remove"
+
+    # Now, start the new containers
+    - name: Start new containers with Docker Compose
       run: |
         docker-compose -f docker-compose.prod.yml up -d --build
+        if [ $? -ne 0 ]; then
+          echo "Failed to start the container! Restoring the previous state."
+          # Attempt to restore the previous state (you could re-run the previous working container or image)
+          docker-compose up -d || echo "Rollback failed"
+          exit 1
+        fi
+
+    # Install Python dependencies after container is up
     - name: Install Python dependencies in web service
       run: |
         docker-compose exec -T web pip install --upgrade pip
         docker-compose exec -T web pip install -r requirements.txt
 
-    # - name: Shut down Docker Compose services
-    #   run: |
-    #     docker-compose -f docker-compose.prod.yml down -v
-
-    # Login to Docker Hub
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    # Build and push Docker image to Docker Hub
-
-    - name: Build and push Docker image for web
-      env:
-        IMAGE_TAG: ${{ github.sha }}
+    # Shut down Docker Compose services after successful installation
+    - name: Shut down Docker Compose services
       run: |
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-web:${{ github.sha }} -f Rule_Engine_web_app/Dockerfile.prod .
-
-    - name: Debug build context
-      run: |
-        ls -l ./nginx
-        
-    - name: Build and push Docker image for nginx
-
-      env:
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        docker build --no-cache -t ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }} -f ./nginx/Dockerfile ./nginx
-        
-   
-    - name: Push Docker images
-      run: |
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-web:${{ github.sha }}
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/borrower-qualification-nginx:${{ github.sha }}
-        
-     
-        docker ps
+        docker-compose down -v --remove-orphans
